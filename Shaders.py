@@ -42,16 +42,37 @@ class Shader3D:
         self.viewMatrixLoc = glGetUniformLocation(self.renderingProgramID, "u_view_matrix")
         self.projectionMatrixLoc = glGetUniformLocation(self.renderingProgramID, "u_projection_matrix")
         
+        ##original light
         #self.colorLoc = glGetUniformLocation(self.renderingProgramID, "u_color")
         self.eyePosLoc = glGetUniformLocation(self.renderingProgramID, "u_eye_position")
         self.lightPosLoc = glGetUniformLocation(self.renderingProgramID, "u_light_position")
         self.lightDiffuseLoc = glGetUniformLocation(self.renderingProgramID, "u_light_diffuse")
         self.lightSpecLoc = glGetUniformLocation(self.renderingProgramID, "u_light_specular")
         self.lightAmbianceLoc = glGetUniformLocation(self.renderingProgramID, "u_light_ambiance")
-    
+
         self.materialDiffuseLoc = glGetUniformLocation(self.renderingProgramID, "u_material_diffuse")
         self.materialSpecLoc = glGetUniformLocation(self.renderingProgramID, "u_material_specular")
         self.materialShininessLoc = glGetUniformLocation(self.renderingProgramID, "u_material_shininess")
+
+ 
+        self.light1PosLoc = glGetUniformLocation(self.renderingProgramID, "u_light1_position")
+        self.light1DiffuseLoc = glGetUniformLocation(self.renderingProgramID, "u_light1_diffuse")
+        self.light1SpecLoc = glGetUniformLocation(self.renderingProgramID, "u_light1_specular")
+        self.light1AmbianceLoc = glGetUniformLocation(self.renderingProgramID, "u_light1_ambiance")
+
+        self.materia1lDiffuseLoc = glGetUniformLocation(self.renderingProgramID, "u_material1_diffuse")
+        self.material1SpecLoc = glGetUniformLocation(self.renderingProgramID, "u_material1_specular")
+        self.material1ShininessLoc = glGetUniformLocation(self.renderingProgramID, "u_material1_shininess")
+
+   
+        self.light2PosLoc = glGetUniformLocation(self.renderingProgramID, "u_light2_position")
+        self.light2DiffuseLoc = glGetUniformLocation(self.renderingProgramID, "u_light2_diffuse")
+        self.light2SpecLoc = glGetUniformLocation(self.renderingProgramID, "u_light2_specular")
+        self.light2AmbianceLoc = glGetUniformLocation(self.renderingProgramID, "u_light2_ambiance")
+
+        self.material2DiffuseLoc = glGetUniformLocation(self.renderingProgramID, "u_material2_diffuse")
+        self.material2SpecLoc = glGetUniformLocation(self.renderingProgramID, "u_material2_specular")
+        self.material2ShininessLoc = glGetUniformLocation(self.renderingProgramID, "u_material2_shininess")
 
     def use(self):
         try:
@@ -79,13 +100,48 @@ class Shader3D:
         glUniform4f(self.lightSpecLoc, red, green, blue, 1.0)
     def set_light_ambiance(self, red, green, blue):
         glUniform4f(self.lightAmbianceLoc, red, green, blue, 1.0)
-    
+
+
     def set_material_diffuse(self, red, green, blue):
         glUniform4f(self.materialDiffuseLoc, red, green, blue, 1.0)
     def set_material_specular(self, red, green, blue):
         glUniform4f(self.materialSpecLoc, red, green, blue, 1.0)
     def set_material_shininess(self, shininess):
         glUniform1f(self.materialShininessLoc, shininess)
+
+    def set_light1_position(self, pos):
+          glUniform4f(self.light1PosLoc, pos.x, pos.y, pos.z, 1.0)
+    def set_light1_diffuse(self, red, green, blue):
+        glUniform4f(self.light1DiffuseLoc, red, green, blue, 1.0)
+    def set_light1_specular(self, red, green, blue):
+        glUniform4f(self.light1SpecLoc, red, green, blue, 1.0)
+    def set_light1_ambiance(self, red, green, blue):
+        glUniform4f(self.light1AmbianceLoc, red, green, blue, 1.0)
+
+
+    def set_material1_diffuse(self, red, green, blue):
+        glUniform4f(self.material1DiffuseLoc, red, green, blue, 1.0)
+    def set_material1_specular(self, red, green, blue):
+        glUniform4f(self.material1SpecLoc, red, green, blue, 1.0)
+    def set_material1_shininess(self, shininess):
+        glUniform1f(self.material1ShininessLoc, shininess)
+
+    def set_light2_position(self, pos):
+          glUniform4f(self.light2PosLoc, pos.x, pos.y, pos.z, 1.0)
+    def set_light2_diffuse(self, red, green, blue):
+        glUniform4f(self.light2DiffuseLoc, red, green, blue, 1.0)
+    def set_light2_specular(self, red, green, blue):
+        glUniform4f(self.light2SpecLoc, red, green, blue, 1.0)
+    def set_light2_ambiance(self, red, green, blue):
+        glUniform4f(self.light2AmbianceLoc, red, green, blue, 1.0)
+
+
+    def set_material2_diffuse(self, red, green, blue):
+        glUniform4f(self.material2DiffuseLoc, red, green, blue, 1.0)
+    def set_material2_specular(self, red, green, blue):
+        glUniform4f(self.material2SpecLoc, red, green, blue, 1.0)
+    def set_material2_shininess(self, shininess):
+        glUniform1f(self.material2ShininessLoc, shininess)
 
     def set_position_attribute(self, vertex_array):
         glVertexAttribPointer(self.positionLoc, 3, GL_FLOAT, False, 0, vertex_array)
