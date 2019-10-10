@@ -35,45 +35,52 @@ class GraphicsProgram3D:
         self.cube = Cube()
         self.cube.set_vertices(self.shader)
 
-        self.sphere = Sphere()
+        self.sphere = Sphere(25, 50)
         self.radius = 1.4
         self.clock = pygame.time.Clock()
         self.clock.tick()
 
         self.angle = 0
 
-        self.UP_key_down = False  
-        self.DOWN_key_down = False  
-        self.LEFT_key_down = False  
-        self.RIGHT_key_down = False  
-
-        self.w_key_down = False  ## --- ADD CONTROLS FOR OTHER KEYS TO CONTROL THE CAMERA --- ##
-        self.s_key_down = False  ## --- ADD CONTROLS FOR OTHER KEYS TO CONTROL THE CAMERA --- ##
-        self.a_key_down = False  ## --- ADD CONTROLS FOR OTHER KEYS TO CONTROL THE CAMERA --- ##
-        self.d_key_down = False  ## --- ADD CONTROLS FOR OTHER KEYS TO CONTROL THE CAMERA --- ##
-
-        self.q_key_down = False  ## --- ADD CONTROLS FOR OTHER KEYS TO CONTROL THE CAMERA --- ##
-        self.e_key_down = False  ## --- ADD CONTROLS FOR OTHER KEYS TO CONTROL THE CAMERA --- ##
-        self.r_key_down = False  ## --- ADD CONTROLS FOR OTHER KEYS TO CONTROL THE CAMERA --- ##
-        self.f_key_down = False  ## --- ADD CONTROLS FOR OTHER KEYS TO CONTROL THE CAMERA --- ##
+        self.w_key_down = False  
+        self.s_key_down = False  
+        self.a_key_down = False  
+        self.d_key_down = False  
 
         self.white_background = False
         self.size = 5
         self.maze = Maze(self.size)
-        self.ballPosX = 2
-        self.ballPosZ = 2
+        self.ballGridX = 0
+        self.ballGridZ = 0
+        self.ballPosX = 0.0
+        self.ballPosZ = 0.0
         self.ballOri = "north"
-        self.speed = 5
+        self.speed = 5.0
+        self.ballElapsed = 0.0
 
     def update(self):
         delta_time = self.clock.tick() / 1000.0
-
+        self.ballElapsed -= delta_time
         self.angle += pi * delta_time
         if self.angle > 2 * pi:
             self.angle -= (2 * pi)
-        ballmove = ballMovement(self.maze,)
-        if ballmove[0] == "north":
-            pass
+        if self.ballElapsed <= 0.0:
+            ballmove = ballMovement(self.maze, self.speed, self.ballOri, self.ballGridX, self.ballGridZ)
+            if ballmove[1] == "north": self.ballGridZ += 1
+            if ballmove[1] == "south": self.ballGridZ -= 1
+            if ballmove[1] == "east": self.ballGridX += 1
+            if ballmove[1] == "west": self.ballGridX -= 1
+            self.ballElapsed = ballmove[0]
+            self.ballOri = ballmove[1]
+            print(ballmove[0], ballmove[1], self.ballGridX, self.ballGridZ)
+        if self.ballOri == "north":
+            self.ballPosZ += (self.speed * delta_time) / 3.0
+        if self.ballOri == "south":
+            self.ballPosZ -= (self.speed * delta_time) / 3.0
+        if self.ballOri == "west":
+            self.ballPosX -= (self.speed * delta_time) / 3.0
+        if self.ballOri == "east":
+            self.ballPosX += (self.speed * delta_time) / 3.0
         self.ballCollision()
         self.playerMove(delta_time)
 
@@ -89,6 +96,10 @@ class GraphicsProgram3D:
         #print(eyePosX, eyePosZ)  
         if self.w_key_down: 
             self.view_matrix.slide(0, 0, -1 * delta_time)
+            # if self.view_matrix.eye.x < ((3 * eyePosX) - 0.5) and self.view_matrix.eye.z < ((3 * eyePosZ) - 0.5):
+            #     self.view_matrix.eye.x = ((3 * eyePosX) - 0.5)
+            #     self.view_matrix.eye.z = ((3 * eyePosZ) - 0.5)
+            #     print("sjomli hvar ertu")
             if not self.maze.cells[eyePosX][eyePosZ].south:
                 if self.view_matrix.eye.z < ((3 * eyePosZ) - 0.5):
                     self.view_matrix.eye.z = ((3 * eyePosZ) - 0.5)
@@ -153,15 +164,11 @@ class GraphicsProgram3D:
         self.shader.set_light_specular(0.8, 0.3, 0.4)
         self.shader.set_light_ambiance(0.1, 0.0, 0.0)
 
-        self.sphere.set_vertices(self.shader)
-        self.model_matrix.push_matrix()
-        self.model_matrix.add_translation(3.0, 1.0, 3.0)
-        self.shader.set_model_matrix(self.model_matrix.matrix)
-        self.sphere.draw(self.shader)
-        self.model_matrix.pop_matrix()        
+        self.drawSphere()        
         self.displayMaze()
         self.drawExtirior()
 
+        #floor
         self.model_matrix.push_matrix()
         self.model_matrix.add_translation(5.0, -0.2, 5.0)  
         self.model_matrix.add_scale(20.0, 0.4, 20.0)  
@@ -174,28 +181,31 @@ class GraphicsProgram3D:
 
         self.model_matrix.load_identity()        
         #self.cube.set_vertices(self.shader)
-        self.view_matrix_mini.look(self.view_matrix.eye + Point(0, 25, 0), self.view_matrix.eye, Vector(0, 0, 1))
+        self.view_matrix_mini.look(self.view_matrix.eye + Point(0, 25, 0), self.view_matrix.eye, Vector(0, 0, -1))
         self.shader.set_view_matrix(self.view_matrix_mini.get_matrix())
         self.shader.set_eye_position(self.view_matrix_mini.eye)
 
-        self.sphere.set_vertices(self.shader)
-        self.model_matrix.push_matrix()
-        self.model_matrix.add_translation(3.0, 1.0, 3.0)
-        self.shader.set_model_matrix(self.model_matrix.matrix)
-        self.sphere.draw(self.shader)
-        self.model_matrix.pop_matrix()        
+        self.drawSphere()
         self.displayMaze()
         self.drawExtirior()
 
         self.model_matrix.push_matrix()
+        self.model_matrix.add_translation(self.view_matrix.eye.x, self.view_matrix.eye.y, self.view_matrix.eye.z)  
+        self.shader.set_material_diffuse(0.1, 0.8, 0.2)
+        #self.model_matrix.add_scale(20.0, 0.4, 20.0)  
+        self.shader.set_model_matrix(self.model_matrix.matrix)
+        self.cube.draw(self.shader)
+        self.model_matrix.pop_matrix()
+        
+        #floor        
+        self.model_matrix.push_matrix()
         self.model_matrix.add_translation(5.0, -0.2, 5.0)  
         self.model_matrix.add_scale(20.0, 0.4, 20.0)  
+        self.shader.set_material_diffuse(0.2, 0.2, 0.2)
         self.shader.set_model_matrix(self.model_matrix.matrix)
         self.cube.draw(self.shader)
         self.model_matrix.pop_matrix()
         pygame.display.flip()
-
-
 
     def program_loop(self):
         exiting = False
@@ -209,15 +219,6 @@ class GraphicsProgram3D:
                     if event.key == K_ESCAPE:
                         print("Escaping!")
                         exiting = True
-                        
-                    if event.key == K_UP:
-                        self.UP_key_down = True
-                    elif event.key == K_DOWN:
-                        self.DOWN_key_down = True
-                    elif event.key == K_LEFT:
-                        self.LEFT_key_down = True
-                    elif event.key == K_RIGHT:
-                        self.RIGHT_key_down = True
 
                     if event.key == K_w:
                         self.w_key_down = True
@@ -227,24 +228,7 @@ class GraphicsProgram3D:
                         self.a_key_down = True
                     elif event.key == K_d:
                         self.d_key_down = True
-
-                    if event.key == K_q:
-                        self.q_key_down = True
-                    elif event.key == K_e:
-                        self.e_key_down = True
-                    elif event.key == K_r:
-                        self.r_key_down = True
-                    elif event.key == K_f:
-                        self.r_key_down = True
                 elif event.type == pygame.KEYUP:
-                    if event.key == K_UP:
-                        self.UP_key_down = False
-                    elif event.key == K_DOWN:
-                        self.DOWN_key_down = False
-                    elif event.key == K_LEFT:
-                        self.LEFT_key_down = False
-                    elif event.key == K_RIGHT:
-                        self.RIGHT_key_down = False
 
                     if event.key == K_w:
                         self.w_key_down = False
@@ -254,15 +238,6 @@ class GraphicsProgram3D:
                         self.a_key_down = False
                     elif event.key == K_d:
                         self.d_key_down = False
-
-                    if event.key == K_q:
-                        self.q_key_down = False
-                    elif event.key == K_e:
-                        self.e_key_down = False
-                    elif event.key == K_r:
-                        self.r_key_down = False
-                    elif event.key == K_f:
-                        self.r_key_down = False
             
             self.update()
             self.display()
@@ -301,8 +276,18 @@ class GraphicsProgram3D:
         for i in range(self.size):
             self.drawSouthWall(i, self.size)
             self.drawWestWall(self.size, i)
-
-
+    
+    def drawSphere(self):
+        self.sphere.set_vertices(self.shader)
+        self.model_matrix.push_matrix()
+        self.model_matrix.add_translation(self.ballPosX, 1.0, self.ballPosZ)
+        #if self.ballOri == "north": self.model_matrix.add_rotateY(self.angle)
+        #elif self.ballOri == "south": self.model_matrix.add_rotateY(-self.angle)
+        #elif self.ballOri == "west": self.model_matrix.add_rotateY(-self.angle)
+        #elif self.ballOri == "east": self.model_matrix.add_rotateY(self.angle)
+        self.shader.set_model_matrix(self.model_matrix.matrix)
+        self.sphere.draw(self.shader)
+        self.model_matrix.pop_matrix()
 
     def start(self):
         self.program_loop()
