@@ -169,8 +169,8 @@ class GraphicsProgram3D:
         self.shader.set_light1_specular(0.8, 0.3, 0.4)
         self.shader.set_light1_ambiance(0.1, 0.0, 0.0)
 
-        self.shader.set_light2_direction(Point(-1.0, -1.0, -1.0))
-        self.shader.set_light2_diffuse(0.4, 0.3, 0.8)
+        self.shader.set_light2_direction(Point(-0.3, -1.0, -0.3))
+        self.shader.set_light2_diffuse(0.4, 0.8, 0.8)
         self.shader.set_light2_specular(0.6, 0.3, 0.4)
         self.shader.set_light2_ambiance(0.1, 0.0, 0.0)
         self.drawSphere()
