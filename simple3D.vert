@@ -19,17 +19,11 @@ uniform vec4 u_light1_position;
 uniform vec4 u_light1_diffuse;
 uniform vec4 u_light1_specular;
 uniform vec4 u_light1_ambiance;
-uniform vec4 u_material1_diffuse;
-uniform vec4 u_material1_specular;
-uniform int u_material1_shininess;
 
-uniform vec4 u_light2_position;
+uniform vec4 u_light2_direction;
 uniform vec4 u_light2_diffuse;
 uniform vec4 u_light2_specular;
 uniform vec4 u_light2_ambiance;
-uniform vec4 u_material2_diffuse;
-uniform vec4 u_material2_specular;
-uniform int u_material2_shininess;
 
 const int numberOfLights = 3;
 
@@ -51,7 +45,7 @@ void main(void)
 	vec4 s1 = normalize(u_light1_position - position);
 	float lambert1 = max(dot(normal, s1), 0);
 
-	vec4 s2 = normalize(u_light2_position - position);
+	vec4 s2 = u_light2_direction;
 	float lambert2 = max(dot(normal, s2), 0);
 
 	vec4 v = normalize(u_eye_position - position);
@@ -63,9 +57,8 @@ void main(void)
 	float phong1 = max(dot(normal, h1), 0);
 	float phong2 = max(dot(normal, h2), 0);
 	v_color = (u_light_ambiance + u_light_diffuse * u_material_diffuse * lambert + u_light_specular * u_material_specular * pow(phong, u_material_shininess))
-						+ (u_light1_ambiance + u_light1_diffuse * u_material1_diffuse * lambert1 + u_light1_specular * u_material1_specular * pow(phong1, u_material1_shininess))
-						+ (u_light2_ambiance + u_light2_diffuse * u_material2_diffuse * lambert2 + u_light2_specular * u_material2_specular * pow(phong2, u_material2_shininess));
-
+						+ (u_light1_ambiance + u_light1_diffuse * u_material_diffuse * lambert1 + u_light1_specular * u_material_specular * pow(phong1, u_material_shininess))
+						+ (u_light2_ambiance + u_light2_diffuse * u_material_diffuse * lambert2 + u_light2_specular * u_material_specular * pow(phong2, u_material_shininess));
 
 	position = u_view_matrix * position;
 	position = u_projection_matrix * position;

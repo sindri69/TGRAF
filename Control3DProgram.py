@@ -29,7 +29,7 @@ class GraphicsProgram3D:
         self.view_matrix.look(Point(0, 1, 0), Point(0, 1, 1), Vector(0, 1, 0))
         self.projection_matrix = ProjectionMatrix()
         #self.projection_matrix.set_orthographic(-2, 2, -2, 2, 0.5, 10)
-        self.projection_matrix.set_perspective(pi/2, 4/3, 0.5, 30)
+        self.projection_matrix.set_perspective(pi/2, 4/3, 0.3, 30)
         self.shader.set_projection_matrix(self.projection_matrix.get_matrix())
 
         self.cube = Cube()
@@ -48,7 +48,7 @@ class GraphicsProgram3D:
         self.d_key_down = False  
 
         self.white_background = False
-        self.size = 5
+        self.size = 8
         self.maze = Maze(self.size)
         self.ballGridX = 0
         self.ballGridZ = 0
@@ -85,9 +85,9 @@ class GraphicsProgram3D:
         self.playerMove(delta_time)
 
     def ballCollision(self):
-        bla = Vector(self.view_matrix.eye.x - 3.0, 0.0, self.view_matrix.eye.z - 3.0)
-        blabla = bla.__len__()
-        if blabla < self.radius:
+        ballVec = Vector(self.view_matrix.eye.x - self.ballPosX, 0.0, self.view_matrix.eye.z - self.ballPosZ)
+        distance = ballVec.__len__()
+        if distance < self.radius:
             print("sjomli")
 
     def playerMove(self, delta_time):
@@ -95,7 +95,7 @@ class GraphicsProgram3D:
         eyePosZ = (int)(self.view_matrix.eye.z + 2) // 3
         #print(eyePosX, eyePosZ)  
         if self.w_key_down: 
-            self.view_matrix.slide(0, 0, -1 * delta_time)
+            self.view_matrix.slide(0, 0, -2 * delta_time)
             # if self.view_matrix.eye.x < ((3 * eyePosX) - 0.5) and self.view_matrix.eye.z < ((3 * eyePosZ) - 0.5):
             #     self.view_matrix.eye.x = ((3 * eyePosX) - 0.5)
             #     self.view_matrix.eye.z = ((3 * eyePosZ) - 0.5)
@@ -156,44 +156,43 @@ class GraphicsProgram3D:
         glViewport(0, 0, 800, 600)
 
         self.model_matrix.load_identity()
-        #self.cube.set_vertices(self.shader)
+        #self.cube.set_vertices(self.shaderself.shader)
         self.shader.set_view_matrix(self.view_matrix.get_matrix())
         self.shader.set_eye_position(self.view_matrix.eye)
-        self.shader.set_light_position(Point(1, 1.0, 1))
+        self.shader.set_light_position(Point(1.0, 1.0, 1.0))
         self.shader.set_light_diffuse(0.8, 0.3, 0.4)
         self.shader.set_light_specular(0.8, 0.3, 0.4)
         self.shader.set_light_ambiance(0.1, 0.0, 0.0)
 
-        self.drawSphere()        
-        self.shader.set_light1_position(Point(10.0, 10.0, 10))
-        self.shader.set_light1_diffuse(0.8, 0.3, 0.4)
+        self.shader.set_light1_position(Point(1.0, 1.0, 1.0))
+        self.shader.set_light1_diffuse(0.3, 0.6, 0.2)
         self.shader.set_light1_specular(0.8, 0.3, 0.4)
         self.shader.set_light1_ambiance(0.1, 0.0, 0.0)
 
-
-        ##self.shader.set_light_position(Point(1, 1.0, 1))
-        ##self.shader.set_light_diffuse(0.8, 0.3, 0.4)
-        ##self.shader.set_light_specular(0.8, 0.3, 0.4)
-        ##self.shader.set_light_ambiance(0.1, 0.0, 0.0)
+        self.shader.set_light2_direction(Point(-1.0, -1.0, -1.0))
+        self.shader.set_light2_diffuse(0.4, 0.3, 0.8)
+        self.shader.set_light2_specular(0.6, 0.3, 0.4)
+        self.shader.set_light2_ambiance(0.1, 0.0, 0.0)
         self.drawSphere()
         self.displayMaze()
         self.drawExtirior()
 
         #floor
         self.model_matrix.push_matrix()
-        self.model_matrix.add_translation(5.0, -0.2, 5.0)  
-        self.model_matrix.add_scale(20.0, 0.4, 20.0)  
+        self.model_matrix.add_translation(8.0, -0.2, 8.0)  
+        self.model_matrix.add_scale(32.0, 0.4, 32.0)  
         self.shader.set_model_matrix(self.model_matrix.matrix)
         self.shader.set_material_shininess(2)
+        self.cube.set_vertices(self.shader)
         self.cube.draw(self.shader)
         self.model_matrix.pop_matrix()
         #pygame.display.flip()
-        glViewport(400, 300, 600, 500)
+        glViewport(400, 300, 600, 500) ##minimap
         glClear(GL_DEPTH_BUFFER_BIT)
 
         self.model_matrix.load_identity()        
-        #self.cube.set_vertices(self.shader)
-        self.view_matrix_mini.look(self.view_matrix.eye + Point(0, 25, 0), self.view_matrix.eye, Vector(0, 0, -1))
+        #self.cube.set_vertices(self.shaderself.shader)
+        self.view_matrix_mini.look(self.view_matrix.eye + Point(0, 25, 10), self.view_matrix.eye + Point(0, 0, 10), Vector(0, 0, 1))
         self.shader.set_view_matrix(self.view_matrix_mini.get_matrix())
         self.shader.set_eye_position(self.view_matrix_mini.eye)
 
@@ -203,19 +202,21 @@ class GraphicsProgram3D:
 
         self.model_matrix.push_matrix()
         self.model_matrix.add_translation(self.view_matrix.eye.x, self.view_matrix.eye.y, self.view_matrix.eye.z)  
-        self.shader.set_material_diffuse(0.1, 0.8, 0.2)
+        self.shader.set_material_diffuse(0.4, 0.9, 0.2)
         #self.model_matrix.add_scale(20.0, 0.4, 20.0)  
         self.shader.set_model_matrix(self.model_matrix.matrix)
+        self.cube.set_vertices(self.shader)
         self.cube.draw(self.shader)
         self.model_matrix.pop_matrix()
         
         #floor        
         self.model_matrix.push_matrix()
-        self.model_matrix.add_translation(5.0, -0.2, 5.0)  
-        self.model_matrix.add_scale(20.0, 0.4, 20.0)  
+        self.model_matrix.add_translation(8.0, -0.2, 8.0)  
+        self.model_matrix.add_scale(32.0, 0.4, 32.0)  
         self.shader.set_material_diffuse(0.2, 0.2, 0.2)
         self.shader.set_model_matrix(self.model_matrix.matrix)
         self.shader.set_material_shininess(10)
+        self.cube.set_vertices(self.shader)
         self.cube.draw(self.shader)
         self.model_matrix.pop_matrix()
         pygame.display.flip()
@@ -272,6 +273,7 @@ class GraphicsProgram3D:
         self.model_matrix.add_scale(0.1, 2, 1)
         self.shader.set_material_diffuse(0.3, 0.2, 0.8)
         self.shader.set_model_matrix(self.model_matrix.matrix)
+        self.cube.set_vertices(self.shader)
         self.cube.draw(self.shader)
         self.model_matrix.pop_matrix()
 
@@ -282,6 +284,7 @@ class GraphicsProgram3D:
         self.model_matrix.add_scale(1, 2, 0.1)
         self.shader.set_material_diffuse(0.3, 0.2, 0.8)
         self.shader.set_model_matrix(self.model_matrix.matrix)
+        self.cube.set_vertices(self.shader)
         self.cube.draw(self.shader)
         self.model_matrix.pop_matrix()
 
@@ -294,6 +297,7 @@ class GraphicsProgram3D:
         self.sphere.set_vertices(self.shader)
         self.model_matrix.push_matrix()
         self.model_matrix.add_translation(self.ballPosX, 1.0, self.ballPosZ)
+        self.shader.set_material_diffuse(0.5, 0.5, 0.5)
         #if self.ballOri == "north": self.model_matrix.add_rotateY(self.angle)
         #elif self.ballOri == "south": self.model_matrix.add_rotateY(-self.angle)
         #elif self.ballOri == "west": self.model_matrix.add_rotateY(-self.angle)
